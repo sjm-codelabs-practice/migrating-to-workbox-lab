@@ -17,7 +17,7 @@
 const gulp = require("gulp");
 const browserSync = require("browser-sync");
 const del = require("del");
-const swPrecache = require("sw-precache");
+const workboxBuild = require("workbox-build");
 
 // Clean "build" directory
 const clean = () => del(["build/*"], { dot: true });
@@ -27,13 +27,24 @@ gulp.task("clean", clean);
 const copy = () => gulp.src(["app/**/*"]).pipe(gulp.dest("build"));
 gulp.task("copy", copy);
 
-// Generate a service worker with sw-precache
+// Generate a service worker with workbox
 const serviceWorker = () =>
-  swPrecache.write("build/sw.js", {
-    staticFileGlobs: ["build/index.html", "build/styles/main.css"],
-    importScripts: ["sw-toolbox.js", "js/toolbox-script.js"],
-    stripPrefix: "build",
-  });
+  workboxBuild
+    .injectManifest({
+      swSrc: "app/sw.js",
+      swDest: "build/sw.js",
+      globDirectory: "build",
+      globPatterns: ["index.html", "styles/main.css"],
+    })
+    .then(resources => {
+      console.log(
+        `Injected ${resources.count} resources for precaching, ` +
+          `totaling ${resources.size} bytes.`,
+      );
+    })
+    .catch(err => {
+      console.log(`[ERROR] This happened: ${err}`);
+    });
 gulp.task("service-worker", serviceWorker);
 
 // This is the app's build process
