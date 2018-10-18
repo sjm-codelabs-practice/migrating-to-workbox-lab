@@ -13,7 +13,8 @@
   },
   "globals": {
     "alert": true,
-    "self": true
+    "self": true,
+    "toolbox": true
   },
   "parserOptions": {
     "sourceType": "module",
